@@ -14,12 +14,12 @@ DEFAULTMEMO = "f6000000000000000000000000000000000000000000000000000000000000000
 
 def get_received_data(z_address):
     json_data = subprocess.getoutput(KOTOCLI + "z_listreceivedbyaddress " + z_address)
-    raw_data = json.loads(json_data)
-    return raw_data
+    received_data = json.loads(json_data)
+    return received_data
 
-def get_transaction_data(raw_data):
+def get_transaction_data(received_data):
     unsorted_data = []
-    for a_data in raw_data:
+    for a_data in received_data:
         transaction_json_data = subprocess.getoutput(KOTOCLI + "gettransaction " + a_data["txid"])
         transaction_data = json.loads(transaction_json_data)    
         if a_data["memo"] != DEFAULTMEMO:
