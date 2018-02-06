@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# Copyright (C) 2018 akarinS <akaringithub0655@gmail.com>
+# Released under the WTFPL.
+# http://www.wtfpl.net/txt/copying/
+
 import subprocess
 import json
 import datetime
