@@ -4,27 +4,56 @@
 # Released under the WTFPL.
 # http://www.wtfpl.net/txt/copying/
 
+import os
 import subprocess
 import json
-import datetime
 import sys
-import os
 import codecs
+import datetime
 
-ARGS = sys.argv
-ZADDRESS = ARGS[1]
-KOTOCLI = os.path.join(os.path.dirname(os.path.abspath(__file__)), "koto-cli ")
+KOTOCLI = os.path.join(os.path.dirname(os.path.abspath(__file__)), "koto-cli")
 
-def get_received_data(z_address):
-    json_data = subprocess.getoutput(KOTOCLI + "z_listreceivedbyaddress " + z_address)
-    received_data = json.loads(json_data)
-    return received_data
+def use_koto_cli(command, *args, not_json = False):
+    command_string_list = [KOTOCLI, command]
+    command_string_list.extend(args)
+    result = subprocess.getoutput(" ".join(command_string_list))
+    if not_json:
+        return result
+    result = json.loads(result)
+    return result
 
-def get_transaction_data(received_data):
-    unsorted_data = []
+def input_index():
+    while True:
+        try:
+            index_string = input("Select number of address : ")
+        except (EOFError, KeyboardInterrupt):
+            print("")
+            sys.exit()
+        if index_string.isdigit():
+            index = int(index_string)
+            break
+    return index
+
+def select_z_address():
+    z_address_list = use_koto_cli("z_listaddresses")
+    index = 0
+    for z_address in z_address_list:
+        print("[" + str(index) + "] " + z_address)
+        index += 1
+    print("")
+    while True:
+        index = input_index()
+        if 0 <= index and index < len(z_address_list):
+            selected_z_address = z_address_list[index]
+            print("\n" + selected_z_address, end="\n\n")
+            break
+    return selected_z_address
+
+def get_data(z_address):
+    data = []
+    received_data = use_koto_cli("z_listreceivedbyaddress", z_address)
     for a_data in received_data:
-        transaction_json_data = subprocess.getoutput(KOTOCLI + "gettransaction " + a_data["txid"])
-        transaction_data = json.loads(transaction_json_data)    
+        transaction_data = use_koto_cli("gettransaction", a_data["txid"])
         if a_data["memo"].startswith("f60000"):
             memo = "---Empty---"
         else:
@@ -32,39 +61,20 @@ def get_transaction_data(received_data):
                 memo = codecs.decode(a_data["memo"], "hex_codec").decode("utf-8")
             except UnicodeDecodeError:
                 memo = "---DecodeError---"
-        txid_time_memo_amount = {"txid": transaction_data["txid"], "time": transaction_data["time"], "memo": memo, "amount": a_data["amount"]}
-        unsorted_data.append(txid_time_memo_amount)
-    return unsorted_data
+        data.append({"time": transaction_data["time"], "amount": a_data["amount"], "txid": a_data["txid"], "memo": memo})
+    data.sort(key = lambda a_data: a_data["time"])
+    return data
 
-def get_sorted_data(unsorted_data):
-    sorted_data = []
-    for a_data in unsorted_data:
-        if len(sorted_data) == 0:
-            sorted_data.append(a_data)
-        else:
-            index = 0
-            while index < len(sorted_data):
-                if a_data["time"] < sorted_data[index]["time"]:
-                    sorted_data.insert(index, a_data)
-                    break
-                elif index == len(sorted_data) - 1:
-                    sorted_data.append(a_data)
-                    break
-                index = index + 1
-    return sorted_data
-
-def print_each_data(sorted_data):
-    print("Date amount txid")
-    print("memo", end="\n\n")
-    for a_data in sorted_data:
+def print_each_data(data):
+    for a_data in data:
         if a_data["memo"] != "---Empty---" and a_data["memo"] != "---DecodeError---":    # if you delete this line, you can see all memo.
             timestamp = datetime.datetime.fromtimestamp(a_data["time"])
             print(str(timestamp) + "  " + "{0:0.8f}".format(a_data["amount"]) + "KOTO  "+ a_data["txid"])
             print(a_data["memo"], end="\n\n")
 
-def get_final_data(z_address):
-    return get_sorted_data(get_transaction_data(get_received_data(ZADDRESS)))
 
 if __name__ == '__main__':
-    print_each_data(get_final_data(ZADDRESS))
+    z_address = select_z_address()
+    data = get_data(z_address)
+    print_each_data(data)
 
