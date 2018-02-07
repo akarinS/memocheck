@@ -4,4 +4,4 @@ Kotoのzアドレスで受け取ったメモを確認する。
     cp memocheck/memocheck.py ~/koto/src/memocheck.py
     chmod u+x ~koto/src/memocheck.py
 
-    ~/koto/src/memocheck.py zAddress
+    ~/koto/src/memocheck.py
