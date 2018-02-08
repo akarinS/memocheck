@@ -2,7 +2,7 @@
 
 # Copyright (C) 2018 akarinS <akaringithub0655@gmail.com>
 # Released under the WTFPL.
-# http://www.wtfpl.net/txt/copying/
+# https://github.com/akarinS/memocheck/blob/master/LICENSE
 
 import os
 import subprocess
