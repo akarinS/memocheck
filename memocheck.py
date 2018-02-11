@@ -35,7 +35,11 @@ def input_index():
     return index
 
 def select_z_address():
-    z_address_list = use_koto_cli("z_listaddresses")
+    version = get_version()
+    if 1001450 <= version:
+        z_address_list = use_koto_cli("z_listaddresses", "true")
+    else:
+        z_address_list = use_koto_cli("z_listaddresses")
     index = 0
     for z_address in z_address_list:
         print("[" + str(index) + "] " + z_address)
@@ -72,6 +76,9 @@ def print_each_data(data):
             print(str(timestamp) + "  " + "{0:0.8f}".format(a_data["amount"]) + "KOTO  "+ a_data["txid"])
             print(a_data["memo"], end="\n\n")
 
+def get_version():
+    info_data = use_koto_cli("getinfo")
+    return info_data["version"]
 
 if __name__ == '__main__':
     z_address = select_z_address()
