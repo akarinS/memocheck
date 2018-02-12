@@ -2,52 +2,64 @@ memocheck.py
 ==========
 
 Kotoのzアドレスで受け取ったメモを確認する。  
+（memocheck.pyはkoto-cliと同じディレクトリに移す必要がありません。）
 
 使用準備
 ----------
 
-    sudo apt install python3
+    sudo apt install python3 python3-pip
+    sudo pip3 install requests
 
     git clone https://github.com/akarinS/memocheck
-    cp memocheck/memocheck.py ~/koto/src/memocheck.py
-    chmod u+x ~koto/src/memocheck.py
+    chmod u+x ./memocheck/memocheck.py
+
+使用方法
+----------
+
+memocheck.pyはどのディレクトリにあっても構いません。
+
+実行
+
+    ./memocheck/memocheck.py
+
+実行したらzアドレスを選択してください。  
+選択したアドレスで受け取ったメモを見ることができます。  
+
+注意
+---------
+
+memocheck.pyはkoto.confのrpcuserやrpcpasswordを読み込みます。  
+これはkotodにデータを要求することだけに使われますが、不安な方はmemocheck_sub.pyを使用してください。
+  
+  
+memocheck_sub.py
+==========
+
+Kotoのzアドレスで受け取ったメモを確認する。  
+（memocheck_sub.pyはkoto-cliと同じディレクトリに移す必要があります。）
+
+使用準備
+----------
+
+    sudo python3
+
+    git clone https://github.com/akarinS/memocheck
+    chmod u+x memocheck/memocheck_sub.py
+
+memocheck_sub.pyをkoto-cliと同じディレクトリへ移動
+
+    cp memocheck/memocheck_sub.py 
+    
+macでもkoto-cliと同じディレクトリに移動すれば大丈夫です。
+
 
 使用方法
 ----------
 
 実行
 
-    ~/koto/src/memocheck.py
+    ~/koto/src/memocheck_sub.py
 
-実行するとzアドレスを選択できるので選んでください。  
-そのアドレスで受け取ったメモを見ることができます。  
-  
-  
-memocheck_dev.py
-==========
-
-まだ途中！  
-Kotoのzアドレスで受け取ったメモを確認する。  
-（koto-cliのあるディレクトリに移す必要なし）  
-
-使用準備
-----------
-
-    sudo python3 python3-pip
-    sudo pip3 requests
-
-    git clone https://github.com/akarinS/memocheck
-    chmod u+x memocheck/memocheck_dev.py
-
-今はここを適切に設定することが必要
-
-    """memocheck.py"""
-    15: rpcuser = "rpcuser"
-    16: rpcpassword = "rpcpassword"
-    17: rpcport = "8432"
-
-実行
-----------
-
-    ./memocheck/memocheck_dev.py
+実行したらzアドレスを選択してください。  
+選択したアドレスで受けっとたメモを見ることができます。
 

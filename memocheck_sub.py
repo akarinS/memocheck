@@ -7,7 +7,7 @@ https://github.com/akarinS/memocheck/blob/master/LICENSE
 """
 
 import os
-import requests
+import subprocess
 import json
 import sys
 import codecs
@@ -18,62 +18,13 @@ from time import sleep
 class Rpc(object):
     
     def __init__(self):
-        self.rpcport = "8432"   # Default port
-        self.headers = {"content-type": "text/plain;"}
-        self.set_conf_path()
-        self.set_rpc_conf()
-
-    def set_conf_path(self):
-        os_name = sys.platform
-        if os_name == "linux":
-            self.path = os.path.expanduser("~/.koto/koto.conf")
-        elif os_name == "darwin":
-            self.path = os.path.expanduser("~/Library/Application Support/Koto/koto.conf")
-        else:
-            self.path = os.path.expanduser("~/.koto/koto.conf")
-    
-    def set_rpc_conf(self):
-        try:
-            with open(self.path, "r") as f:
-                lines = f.readlines()
-        except:
-            print("koto.conf can not be found.")
-            sys.exit()
-        for line in lines:
-            data = line.strip().split("=")
-            if data[0] == "rpcuser":
-                self.rpcuser = data[1]
-            elif data[0] == "rpcpassword":
-                self.rpcpassword = data[1]
-            elif data[0] == "rpcport":
-                self.rpcport = data[1]
+        self.path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "koto-cli")
 
     def koto_cli(self, command, *params):
-        auth = (self.rpcuser, self.rpcpassword)
-        url = "http://127.0.0.1:" + self.rpcport
-        headers = self.headers
-        data = json.dumps({"jsonrpc": "1.0", "id": "memocheck", "method": command, "params": params})
-        timeout = 3
-        while True:
-            try:
-                response = requests.post(url, auth = auth, headers = headers, data = data)
-            except:
-                print("Error : kotod may not be running.")
-                sys.exit()
-            if response.json()["error"] == None:
-                break
-            elif timeout == 0:
-                print("Error : timeout. kotod may be in start-up.")
-                sys.exit()
-            else:
-                timeout -= 1
-                try:
-                    sleep(10)
-                except:
-                    sys.exit()
-        result = response.json()["result"]
+        command_string_list = [self.path, command]
+        command_string_list.extend(params)
+        result = json.loads(subprocess.getoutput(" ".join(command_string_list)))
         return result
-
 
 class Memocheck(object):
 
@@ -88,7 +39,7 @@ class Memocheck(object):
     def select_address(self):
         version = self.rpc.koto_cli("getinfo")["version"]
         if 1001450 <= version:
-            addresses = self.rpc.koto_cli("z_listaddresses", True)
+            addresses = self.rpc.koto_cli("z_listaddresses", "true")
         else:
             addresses = self.rpc.koto_cli("z_listaddresses")
         index = 0
