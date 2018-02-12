@@ -41,7 +41,7 @@ Kotoのzアドレスで受け取ったメモを確認する。
 使用準備
 ----------
 
-    sudo python3
+    sudo apt install python3
 
     git clone https://github.com/akarinS/memocheck
     chmod u+x memocheck/memocheck_sub.py
