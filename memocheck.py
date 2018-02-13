@@ -18,10 +18,12 @@ from time import sleep
 class Rpc(object):
     
     def __init__(self):
-        self.rpcport = "8432"   # Default port
-        self.headers = {"content-type": "text/plain;"}
         self.set_conf_path()
+        self.rpcport = "8432"   # Default port
         self.set_rpc_conf()
+        self.auth = (self.rpcuser, self.rpcpassword)
+        self.url = "http://127.0.0.1:" + self.rpcport
+        self.headers = {"content-type": "text/plain;"}
 
     def set_conf_path(self):
         os_name = sys.platform
@@ -30,7 +32,8 @@ class Rpc(object):
         elif os_name == "darwin":
             self.path = os.path.expanduser("~/Library/Application Support/Koto/koto.conf")
         else:
-            self.path = os.path.expanduser("~/.koto/koto.conf")
+            print("not compatible")
+            sys.exit()
     
     def set_rpc_conf(self):
         try:
@@ -49,14 +52,11 @@ class Rpc(object):
                 self.rpcport = data[1]
 
     def koto_cli(self, command, *params):
-        auth = (self.rpcuser, self.rpcpassword)
-        url = "http://127.0.0.1:" + self.rpcport
-        headers = self.headers
         data = json.dumps({"jsonrpc": "1.0", "id": "memocheck", "method": command, "params": params})
         timeout = 3
         while True:
             try:
-                response = requests.post(url, auth = auth, headers = headers, data = data)
+                response = requests.post(self.url, auth = self.auth, headers = self.headers, data = data)
             except:
                 print("Error : kotod may not be running.")
                 sys.exit()
