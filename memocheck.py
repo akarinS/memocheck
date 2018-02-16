@@ -16,14 +16,14 @@ from time import sleep
 
 
 class Rpc(object):
-    
+
     def __init__(self):
         self.set_conf_path()
-        self.rpcport = "8432"   # Default port
         self.set_rpc_conf()
         self.auth = (self.rpcuser, self.rpcpassword)
         self.url = "http://127.0.0.1:" + self.rpcport
         self.headers = {"content-type": "text/plain;"}
+        self.first_check()
 
     def set_conf_path(self):
         os_name = sys.platform
@@ -34,7 +34,7 @@ class Rpc(object):
         else:
             print("not compatible")
             sys.exit()
-    
+
     def set_rpc_conf(self):
         try:
             with open(self.path, "r") as f:
@@ -42,6 +42,7 @@ class Rpc(object):
         except:
             print("koto.conf can not be found.")
             sys.exit()
+        self.rpcport = "8432"   # Default Port
         for line in lines:
             data = line.strip().split("=")
             if data[0] == "rpcuser":
@@ -51,28 +52,35 @@ class Rpc(object):
             elif data[0] == "rpcport":
                 self.rpcport = data[1]
 
+    def first_check(self):
+        self.koto_cli("help")
+
     def koto_cli(self, command, *params):
         data = json.dumps({"jsonrpc": "1.0", "id": "memocheck", "method": command, "params": params})
-        timeout = 3
         while True:
             try:
                 response = requests.post(self.url, auth = self.auth, headers = self.headers, data = data)
             except:
-                print("Error : kotod may not be running.")
-                sys.exit()
+                self.error_process("Error : kotod may not be running.", "Run kotod and type Enter : ")
+                continue
             if response.json()["error"] == None:
                 break
-            elif timeout == 0:
-                print("Error : timeout. kotod may be in start-up.")
-                sys.exit()
             else:
-                timeout -= 1
-                try:
-                    sleep(10)
-                except:
-                    sys.exit()
+                self.error_process("Error : kotod may be in start-up.", "Wait a moment and type Enter : ")
         result = response.json()["result"]
         return result
+
+    def error_process(self, error_message, request_message):
+        print("")
+        print(error_message)
+        try:
+            a = input(request_message)
+        except (EOFError, KeyboardInterrupt):
+            print("")
+            sys.exit()
+        except:
+            print("Error")
+            sys.exit()
 
 
 class Memocheck(object):
@@ -92,6 +100,7 @@ class Memocheck(object):
         else:
             addresses = self.rpc.koto_cli("z_listaddresses")
         index = 0
+        print("")
         for address in addresses:
             print("[" + str(index) + "] " + address)
             index += 1
@@ -136,6 +145,7 @@ class Memocheck(object):
         self.data = data
 
     def show_data(self):
+        print("")
         for a_data in self.data:
             if a_data["memo"] != "---Empty---" and a_data["memo"] != "---DecodeError---":    # if you delete this line, you can see all memo.
                 timestamp = datetime.datetime.fromtimestamp(a_data["time"])
